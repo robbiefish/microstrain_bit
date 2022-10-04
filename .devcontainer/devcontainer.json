@@ -1,0 +1,36 @@
+{
+    "build": {
+        "context": "..",
+        "dockerfile": "Dockerfile",
+        "args": {
+            "ARCH": "amd64",
+            "UBUNTU_VERSION": "20.04",
+            "USER_ID": "1000",
+            "GROUP_ID": "1000"
+        }
+    },
+    "extensions": [
+        "ms-vscode.cpptools",
+        "ms-python.python",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools-extension-pack"
+    ],
+    "containerUser": "root",
+    "remoteUser": "microstrain",
+    "runArgs": [
+        "--net=host",
+        "--privileged",
+    ],
+    "remoteEnv": {
+        "DISPLAY": "${localEnv:DISPLAY}"
+    },
+    "settings": {},
+    "mounts": [
+        "source=/dev,target=/dev,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder},target=/home/microstrain/BIT_example,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder}/.devcontainer/.vscode-docker,target=/home/microstrain/BIT_example/.vscode,type=bind,consistency=cached",
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+    ],
+    "workspaceMount": "",
+    "workspaceFolder": "/home/microstrain/BIT_example"
+}

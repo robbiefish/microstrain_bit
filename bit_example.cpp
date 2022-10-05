@@ -129,8 +129,16 @@ void printBITInfo(const std::string& name, const BITMap& mappings, const mscl::B
 
 int main(int argc, char** argv)
 {
+    // Accept some parameters
+    std::string port = "/dev/ttyACM0";
+    uint32_t baud = 115200;
+    if (argc >= 2)
+        port = argv[1];
+    if (argc >= 3)
+        baud = std::atoi(argv[2]);
+
     // Initialize the node
-    mscl::InertialNode node(mscl::Connection::Serial("/dev/ttyACM0"));
+    mscl::InertialNode node(mscl::Connection::Serial(port, baud));
 
     // Force the node to idle    
     try { node.setToIdle(); } catch (mscl::Error& e) { sleep(1); }

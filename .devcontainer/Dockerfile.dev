@@ -6,10 +6,15 @@ FROM ${ARCH}/ubuntu:${UBUNTU_VERSION}
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN set -ex \
     && apt-get update && apt-get install -y \
+        gdb \
+        git \
+        vim \
         curl \
         make \
         cmake \
-        build-essential
+        zlib1g-dev \
+        build-essential \
+        bash-completion
 
 # Install MSCL
 ARG ARCH
@@ -23,14 +28,19 @@ RUN set -ex \
     && dpkg-deb -x /tmp/${MSCL_ARTIFACT} /
 ENV LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:/usr/share/c++-mscl"
 
-# Build the code
-COPY bit_example.cpp /tmp/ws/bit_example.cpp
-COPY CMakeLists.txt /tmp/ws/CMakeLists.txt
+# Add a user that will be used when shelling into this container and allow them to use devices
+ARG USER_ID=1000
+ARG GROUP_ID=1000
 RUN set -ex \
-    && mkdir -p /tmp/ws/build \
-    && cd /tmp/ws/build \
-    && cmake /tmp/ws \
-    && make -j \
-    && cp bit_example /usr/bin/microstrain_bit
-
-ENTRYPOINT ["/usr/bin/microstrain_bit"]
+    && apt-get update && apt-get install -y \
+        sudo \
+    && groupadd -g ${USER_ID} microstrain \
+    && useradd \
+        -N \
+        -m \
+        -u ${USER_ID} \
+        -g ${GROUP_ID} \
+        -G "dialout" \
+        -s "/bin/bash" \
+        microstrain \
+    && echo 'microstrain ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers

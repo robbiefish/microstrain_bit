@@ -1,7 +1,7 @@
 {
     "build": {
         "context": "..",
-        "dockerfile": "Dockerfile",
+        "dockerfile": "Dockerfile.dev",
         "args": {
             "ARCH": "amd64",
             "UBUNTU_VERSION": "20.04",

@@ -1,11 +1,9 @@
-#include <cstring>
-#include <iostream>
-#include <algorithm>
+#pragma once
 
-#include <mscl/mscl.h>
+#include "bit_utils.hpp"
 
-using BITTuple = std::tuple<uint8_t, uint8_t>;  /// First element represents the byte, second element represents bit within byte
-using BITMap = std::map<BITTuple, std::string>;
+namespace gq7
+{
 
 // Mapping between names of tests and commanded BIT and bytes (key is the tuple so that the order makes sense)
 static const BITMap commanded_mappings = {
@@ -101,66 +99,4 @@ static const BITMap continuous_mappings = {
     {{14, 1}, "GNSS RTK Dongle Fault                  "},
 };
 
-// Helper function to print BIT status
-void printBITInfo(const std::string& name, const BITMap& mappings, const mscl::Bytes& bytes)
-{
-    // Print the raw values first
-    std::ios_base::fmtflags old_flags(std::cout.flags());
-    std::cout << name << ": ";
-    for (const auto& byte : bytes)
-    {
-        std::cout << std::setfill('0') << std::setw(2) << std::hex << static_cast<uint32_t>(byte);
-    }
-    std::cout << std::endl;
-    std::cout.flags(old_flags);
-
-    // Print the parsed flags
-    for (const auto& mapping : mappings)
-    {
-        const std::string& name = mapping.second;
-        const uint8_t byte_in_payload = std::get<0>(mapping.first);
-        const uint8_t bit_in_byte = std::get<1>(mapping.first);
-        const uint32_t bit_in_payload = (byte_in_payload * 8) + bit_in_byte;
-        const bool test_value = (bytes.at(byte_in_payload) >> bit_in_byte) & 0x01;
-
-        std::cout << "  " << name << ": " << (test_value ? "True " : "False") << " (bit = " << bit_in_payload << ")" << std::endl;
-    }
-}
-
-int main(int argc, char** argv)
-{
-    // Accept some parameters
-    std::string port = "/dev/ttyACM0";
-    uint32_t baud = 115200;
-    if (argc >= 2)
-        port = argv[1];
-    if (argc >= 3)
-        baud = std::atoi(argv[2]);
-
-    // Initialize the node
-    mscl::InertialNode node(mscl::Connection::Serial(port, baud));
-
-    // Force the node to idle    
-    try { node.setToIdle(); } catch (mscl::Error& e) { sleep(1); }
-    node.setToIdle();
-
-    // Set a higher timeout
-    node.timeout(10000);
-
-    // Empty params for both commands
-    mscl::ByteStream param_data;
-
-    // Run the commanded BIT first
-    mscl::Bytes commanded_res = node.doCommand(0x01, 0x05, param_data.data(), true, true, 0x83);
-
-    // Run the continuous BIT now that the commanded BIT has updated the state
-    mscl::Bytes continuous_res = node.doCommand(0x01, 0x08, param_data.data(), true, true, 0x88);
-
-    // Swap the order of the commanded bytes to fit the way the map is setup, and look closer to how the documentation documents it
-    std::reverse(commanded_res.begin(), commanded_res.end());
-
-    // Use the maps to print the status of the commanded bits
-    printBITInfo("Commanded BIT", commanded_mappings, commanded_res);
-    std::cout << std::endl;
-    printBITInfo("Continuous BIT", continuous_mappings, continuous_res);
-}
+}  // namespace gq7

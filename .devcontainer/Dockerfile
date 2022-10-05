@@ -24,13 +24,13 @@ RUN set -ex \
 ENV LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:/usr/share/c++-mscl"
 
 # Build the code
-COPY bit_example.cpp /tmp/ws/bit_example.cpp
+COPY src /tmp/ws/src
 COPY CMakeLists.txt /tmp/ws/CMakeLists.txt
 RUN set -ex \
     && mkdir -p /tmp/ws/build \
     && cd /tmp/ws/build \
     && cmake /tmp/ws \
     && make -j \
-    && cp bit_example /usr/bin/microstrain_bit
+    && make install
 
-ENTRYPOINT ["/usr/bin/microstrain_bit"]
+ENTRYPOINT ["/usr/local/bin/microstrain_bit"]

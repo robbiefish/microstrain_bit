@@ -1,5 +1,7 @@
 # Microstrain Built In Test
 
+**NOTE**: Make sure to clone with `--recursive`
+
 Docker container to run Built In Test (BIT) command on microstrain devices (currently only supports GQ7)
 
 ## Build
